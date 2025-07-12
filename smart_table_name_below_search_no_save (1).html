@@ -1,0 +1,198 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Table - Abdurahmane Si Ahmed</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to right, #f7f9fc, #e1ecf4);
+      margin: 0;
+      padding: 0;
+      color: #2c3e50;
+    }
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .header {
+      background-color: #2c3e50;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 12px;
+      text-align: center;
+    }
+    .search-bar {
+      padding: 10px;
+      font-size: 1em;
+      border-radius: 8px;
+      border: none;
+      width: 220px;
+      margin-bottom: 5px;
+    }
+    .username {
+      font-size: 0.75em;
+      color: black;
+      margin-top: 8px;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+      justify-content: center;
+    }
+    .controls button {
+      padding: 10px 20px;
+      font-size: 1em;
+      border-radius: 8px;
+      border: none;
+      background: #3498db;
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .controls button:hover {
+      background: #1d6fa5;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+    }
+    td {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    td:first-child {
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.1em;
+      width: 60px;
+    }
+    input[type="text"] {
+      width: 100%;
+      font-size: 1em;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      height: 36px;
+    }
+    .match-input {
+      background-color: #d4edda !important;
+      color: #155724;
+      font-weight: bold;
+    }
+    .highlight-number {
+      background-color: #dc3545 !important;
+      color: white !important;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <input id="searchInput" class="search-bar" type="text" placeholder="🔍 Search..." autofocus />
+      <div class="username">Abdurahmane Si Ahmed</div>
+    </div>
+
+    <div class="controls">
+      <button onclick="resetTable()">🗑️ Reset Table</button>
+    </div>
+
+    <table id="smartTable">
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const tableBody = document.getElementById("tableBody");
+    const searchInput = document.getElementById("searchInput");
+
+    function createRow(index) {
+      const savedValue = localStorage.getItem(`row_${index}`) || "";
+      return `<tr id="row-${index}">
+                <td id="num-${index}">${index}</td>
+                <td><input id="input-${index}" type="text" value="${savedValue}" oninput="saveSingle(${index}, this.value)" onkeydown="handleKey(event, ${index})" /></td>
+              </tr>`;
+    }
+
+    function generateTable() {
+      let rows = "";
+      for (let i = 1; i <= 100; i++) {
+        rows += createRow(i);
+      }
+      tableBody.innerHTML = rows;
+    }
+
+    function saveSingle(index, value) {
+      localStorage.setItem(`row_${index}`, value);
+    }
+
+    function resetTable() {
+      if (confirm("Are you sure to reset?")) {
+        localStorage.clear();
+        location.reload();
+      }
+    }
+
+    function handleKey(e, index) {
+      if (e.key === "Enter" || e.key === "Tab") {
+        e.preventDefault();
+        const next = document.querySelector(`#row-${index + 1} input`);
+        if (next) next.focus();
+      }
+    }
+
+    function highlightRow(keyword) {
+      keyword = keyword.toLowerCase();
+      let firstMatch = null;
+
+      for (let i = 1; i <= 100; i++) {
+        const input = document.getElementById(`input-${i}`);
+        const num = document.getElementById(`num-${i}`);
+        input.classList.remove("match-input");
+        num.classList.remove("highlight-number");
+
+        if (keyword && input.value.toLowerCase().includes(keyword)) {
+          input.classList.add("match-input");
+          num.classList.add("highlight-number");
+
+          if (!firstMatch) firstMatch = input;
+        }
+      }
+
+      if (firstMatch) {
+        firstMatch.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+
+    searchInput.addEventListener("input", function () {
+      highlightRow(this.value);
+    });
+
+    document.addEventListener("keydown", function(e) {
+      if (e.ctrlKey && e.key.toLowerCase() === "f") {
+        e.preventDefault();
+        searchInput.blur();
+        requestAnimationFrame(() => {
+          searchInput.value = "";
+          searchInput.focus();
+        });
+      }
+    });
+
+    generateTable();
+  </script>
+</body>
+</html>
